@@ -1,11 +1,10 @@
 import "./App.css";
+import Login from "./Login/Login.tsx";
 
 function App() {
   return (
-  <div>
-    HI
-  </div>
-  );
+    <Login></Login>
+  )
 }
 
 export default App;
