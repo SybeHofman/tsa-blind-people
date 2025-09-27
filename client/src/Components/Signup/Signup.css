@@ -1,0 +1,13 @@
+.signup {
+  padding: 10px;
+  background-color: lightblue;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  width: 300px;
+  border-radius: 5%;
+}
+
+.signup-contents {
+  margin:10px;
+}

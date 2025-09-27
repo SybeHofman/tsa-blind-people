@@ -1,13 +1,13 @@
 .login {
-    padding: 10px;
-    background-color: lightblue;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-    width: 300px;
-    border-radius: 5%;
+  padding: 10px;
+  background-color: lightblue;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  width: 300px;
+  border-radius: 5%;
 }
 
 .login-contents {
-    margin:10px;
+  margin:10px;
 }
