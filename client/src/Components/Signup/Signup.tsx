@@ -33,7 +33,7 @@ function Signup() {
       body: JSON.stringify(list)
     }
 
-    const response = await fetch('/api', options);
+    const response = await fetch('/api/users', options);
 
     const data = await response.json();
     console.log(data);
@@ -49,7 +49,7 @@ function Signup() {
         <label className="signup-contents" htmlFor = "passwordInput">Password: </label>
         <input ref={passwordRef} className="signup-contents" type="password" id="passwordInput" aria-label="Input two of two"></input> <br/>
 
-        <button className="signup-contents submit-button" type="submit" onClick={handleClick}>Submit</button>
+        <button className="signup-contents" type="submit" onClick={handleClick}>Submit</button>
       </div>
       <Link to="/">Home</Link>
     </>
