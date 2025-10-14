@@ -31,7 +31,6 @@ router.post("/", async (request, response) => {
     const newData = {
       username: username,
       password: hash,
-      messages : []
     }
     
     database.insert(newData, (error) => {
@@ -57,42 +56,114 @@ router.get("/", (request, response) => {
     console.log("I got a request!");
 })
 
-//Add new messages
-router.put("/messages", (request, response) => {
-  const {fromUserId, toUserId, newMessage} = request.body;
+//Get id by username
+router.get("/id/:username", (request, response) => {
+  const username = request.params.username;
 
-  database.findOne({ id: fromUserId }, (error, user) => {
-    if (error) {
-      console.log("Error add user messages to from user: ", error);
-      return response.status(500).send("Error add user messages to from user");
-    }
-
-    if (!user) {
-      return response.status(400).send("User not found");
-    }
-
-    user.messages.push({ sent: true, text: newMessage});
-  })
-
-  database.findOne({ id: toUserId }, (error, user) => {
+  database.findOne({ username: username }, (error, user) => {
     if(error) {
-      console.log("Error add user messages to for user: ", error);
-      return response.status(500).send("Error add user messages to for user");
+      console.log("Error finding id: ", error);
+      return response.status(500).send("Error finding id");
     }
 
     if(!user) {
-      return response.status(400).send("User not found");
+      console.log("id not found");
+      return response.status(400).send("id not found");
     }
 
-    user.messages.push({ sent: false, text: newMessage});
+    response.json({_id: user._id});
   })
-  return response.status(200).send("Message sent");
+})
+
+//Add new messages
+router.put("/messages", async (request, response) => {
+  try{
+    const {fromUserId, toUserId, newMessage} = request.body;
+
+    const newFromUserId = (fromUserId + "").replaceAll("\"", "");
+    const newToUserId = (toUserId + "").replaceAll("\"", "");
+
+    // Get user from database
+    const fromUserDb = await new Promise((resolve, reject) => {
+      console.log({ _id: newFromUserId });
+      database.findOne({ _id: newFromUserId }, (error, user) => {
+        if (error) {
+          return reject("Error adding messages to from user");
+        }
+
+        if(!user) {
+          return reject("From user not found");
+        }
+
+        resolve(user)
+      })
+    })
+
+    fromUserDb.messages.push({ sent: true, text: newMessage});
+
+    //Update user in database
+    await new Promise((resolve, reject) => {
+      database.update(
+        { _id: fromUserDb._id },
+        { $set: { messages: fromUserDb.messages } },
+        { upsert: false},
+        (error, numReplaced, upsert) => {
+          if (error) {
+            return reject("Error updating from user messages");
+          }
+          console.log(`Updated ${numReplaced} document(s) for fromUser`);
+          console.log("Upsert: ", upsert);
+          resolve();
+        }
+      );
+    });
+
+    // Get to user from database
+    const toUserDb = await new Promise((resolve, reject) => {
+      database.findOne({ _id: newToUserId }, (error, user) => {
+        if (error) {
+          return reject("Error adding messages for to user");
+        }
+
+        if(!user) {
+          return reject("To user not found");
+        }
+
+        resolve(user)
+      })
+    })
+
+    toUserDb.messages.push({ sent: true, text: newMessage});
+
+    //Update user in database
+    await new Promise((resolve, reject) => {
+      database.update(
+        { _id: toUserDb._id },
+        { $set: { messages: toUserDb.messages } },
+        {upsert: false},
+        (error, numReplaced, upsert) => {
+          if (error) {
+            return reject("Error updating to user messages");
+          }
+          console.log(`Updated ${numReplaced} document(s) for toUser`);
+          console.log("Upsert: ", upsert);
+          resolve();
+        }
+      );
+    });
+
+    console.log("All good!");
+    return response.status(200).send({message: newMessage});
+  } catch (error) {
+    console.log("Error adding messages: ", error);
+    return response.status(500).send("Error adding messages");
+  }
 })
 
 //Get user messages
-router.get("/messages", (request, response) => {
-  const userId = request.id;
-  database.findOne({ id: userId }, (error, user) => {
+router.get("/messages/:id", (request, response) => {
+  const userId = request.params.id;
+  database.findOne({ _id: userId }, (error, user) => {
     if (error) {
       console.log("Error finding user messages: ", error);
       return response.status(500).send("Error finding user messages");
@@ -140,7 +211,9 @@ router.post("/authenticate", async (request, response) => {
       return response.status(500).send("Error verifying password");
     }
 
-    response.json(user.id);
+    console.log(user._id);
+
+    response.status(200).json({id: user._id});
   });
 })
 

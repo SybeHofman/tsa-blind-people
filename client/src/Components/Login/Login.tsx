@@ -1,14 +1,15 @@
 import "./Login.css";
 import {Link} from 'react-router-dom';
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { MouseEvent } from "react";
 
 function Login () {
   const usernameRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const [rememberMe, changeRememberMe] = useState(false);
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+    //e.preventDefault();
 
     if(usernameRef.current == null || passwordRef.current == null) {
       console.error("Username or password input is null");
@@ -34,7 +35,21 @@ function Login () {
     }
 
     const response = await fetch('/api/users/authenticate', options);
-    console.log(response);
+
+    if(!response.ok) {
+      console.log("Authentication failed");
+      return;
+    }
+
+    const id = await response.json();
+    console.log(id);
+    // if(rememberMe){
+    //   localStorage.setItem("_id", JSON.stringify(id.id));
+    // } else {
+    //   sessionStorage.setItem("_id", JSON.stringify(id.id));
+    // }
+
+    sessionStorage.setItem("_id", JSON.stringify(id.id));
   }
 
   return (
@@ -47,8 +62,10 @@ function Login () {
 
           <label className="login-contents" htmlFor = "passwordInput">Password: </label>
           <input ref = {passwordRef} className="login-contents" type="password" id="passwordInput" aria-label="Input two of two"></input>
-
-          <button className="login-contents" type="submit" onClick={handleClick}>Submit</button>
+          <button className="login-contents" type="button" onClick={() => changeRememberMe(previous => !previous)}>{rememberMe + ""}</button>
+          <Link to="/">
+            <button className="login-contents" type="submit" onClick={handleClick}>Submit</button>
+          </Link>
         </div>
         <Link to="/signup">Signup</Link>
       </div>

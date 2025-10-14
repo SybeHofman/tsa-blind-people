@@ -1,5 +1,9 @@
 {
   "dependencies": {
     "react-router-dom": "^7.9.1"
+  },
+  "scripts": {
+    "backend": "cd backend && nodemon --no-deprecation server.js",
+    "client": "cd client && npm run dev"
   }
 }
