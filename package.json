@@ -3,6 +3,7 @@
     "react-router-dom": "^7.9.1"
   },
   "scripts": {
+    "backend-debug": "cd backend && nodemon --inspect --no-deprecation server.js",
     "backend": "cd backend && nodemon --no-deprecation server.js",
     "client": "cd client && npm run dev"
   }
